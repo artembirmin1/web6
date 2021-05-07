@@ -50,7 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 try {
   // Получили все данные соединением 2х таблиц по логину
     $stmt = $db->query('SELECT users.login, users.password, table5.name, table5.email,table5.year, table5.sex, table5.limbs, table5.powers, table5.bio FROM users JOIN table5 on table5.userId = users.login');
-    ?>
+  // Получили и посчитали способности
+    $stmt2 = $db->query(
+		'SELECT SUM((length(table5.powers) - length(replace(table5.powers, "tp", "")))/2),
+			SUM((length(table5.powers) - length(replace(table5.powers, "vision", "")))/6),
+			SUM((length(table5.powers) - length(replace(table5.powers, "levit", "")))/5)
+		FROM table5'
+		);
+	?>
 
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,6 +68,7 @@ try {
     <body>
     <form action="" method="post">
         <div class="table-container">
+        	<!-- Данные пользователей -->
           <table class="table is-hoverable is-fullwidth">
               <thead>
               <tr>
@@ -89,6 +97,27 @@ try {
               ?>
               </tbody>
           </table>
+          <!-- Статистика способностей -->
+          <table class="table is-hoverable is-fullwidth">
+			<thead>
+				<tr>
+				<th>Телепортация</th>
+				<th>Ночное зрение</th>
+				<th>Левитация</th>
+				</tr>
+			</thead>
+		<tbody>
+		<?php
+			while ($row = $stmt2->fetch(PDO::FETCH_ASSOC)) {
+					print('<tr>');
+						foreach ($row as $cell) {
+							print('<td>' . $cell . '</td>');
+						}
+					print('</tr>');
+			}
+		?>
+		</tbody>
+		</table>
         </div>
     </form>
     </body>
